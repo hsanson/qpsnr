@@ -20,6 +20,14 @@
 #ifndef _QAV_H_
 #define _QAV_H_
 
+#ifdef __cplusplus
+#define __STDC_CONSTANT_MACROS
+#ifdef _STDINT_H
+#undef _STDINT_H
+#endif
+#include <stdint.h>
+#endif
+
 // libavcodec is a C library without C++ guards...
 extern "C" {
 #include <libavcodec/avcodec.h>

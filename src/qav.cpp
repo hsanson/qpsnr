@@ -36,7 +36,7 @@ qav::qvideo::qvideo(const char* file, int _out_width, int _out_height) : frnum(0
 	dump_format(pFormatCtx, 0, file, false);
 	// find video stream (first)
 	for (int i=0; i<pFormatCtx->nb_streams; i++)
-        	if (CODEC_TYPE_VIDEO == pFormatCtx->streams[i]->codec->codec_type) {
+        	if (AVMEDIA_TYPE_VIDEO == pFormatCtx->streams[i]->codec->codec_type) {
         		videoStream=i;
             		break;
         	}
@@ -107,8 +107,8 @@ bool qav::qvideo::get_frame(std::vector<unsigned char>& out, int *_frnum) {
 		if (packet.stream_index==videoStream) {
 			int frameFinished = 0;
 			// Decode video frame
-			avcodec_decode_video(pCodecCtx, pFrame, &frameFinished, packet.data, packet.size);
-			//avcodec_decode_video2(pCodecCtx, pFrame, &frameFinished, &packet); // packet.data, packet.size);
+			//avcodec_decode_video(pCodecCtx, pFrame, &frameFinished, packet.data, packet.size);
+			avcodec_decode_video2(pCodecCtx, pFrame, &frameFinished, &packet); // packet.data, packet.size);
 			if(frameFinished) {
 				AVPicture picRGB;
 				// Assign appropriate parts of buffer to image planes in pFrameRGB
