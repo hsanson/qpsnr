@@ -21,6 +21,7 @@
 #include "settings.h"
 #include <stdexcept>
 #include <sstream>
+#include <jpeglib.h>
 
 qav::qvideo::qvideo(const char* file, int _out_width, int _out_height) : frnum(0), videoStream(-1), out_width(_out_width), out_height(_out_height) {
 	const char* pslash = strrchr(file, '/');
@@ -118,10 +119,8 @@ bool qav::qvideo::get_frame(std::vector<unsigned char>& out, int *_frnum) {
        				sws_scale(img_convert_ctx, pFrame->data, pFrame->linesize, 0, pCodecCtx->height, picRGB.data, picRGB.linesize);
 				++frnum;
 				if (_frnum) *_frnum = frnum;
-				if (settings::SAVE_IMAGES) {
-					if ((settings::SKIP_FRAMES < frnum) && (-1 == settings::MAX_FRAMES || frnum <= settings::MAX_FRAMES))
+			  if ((settings::SKIP_FRAMES < frnum) && (-1 == settings::MAX_FRAMES || frnum <= settings::MAX_FRAMES))
 						save_frame(&out[0]);
-				}
 				is_read=true;
 			}
 		}
@@ -154,16 +153,17 @@ bool qav::qvideo::get_frame(std::vector<unsigned char>& out, int *_frnum) {
 	return true;
 }*/
 
-void qav::qvideo::save_frame(const unsigned char *buf, const char* __fname) {
+void qav::qvideo::save_ppm_frame(const unsigned char *buf, const char* __fname) {
 	FILE 		*pFile;
 	std::string	s_fname;
 	char		num_buf[32];
 
-	//
 	sprintf(num_buf, ".%08d.ppm", frnum);
 	num_buf[31] = '\0';
+
 	std::ostringstream oss;
 	oss << ((__fname) ? __fname : fname.c_str()) << num_buf;
+  
 	// Open file
 	pFile=fopen(oss.str().c_str(), "wb");
 	if(pFile==NULL)
@@ -178,6 +178,50 @@ void qav::qvideo::save_frame(const unsigned char *buf, const char* __fname) {
 
     	// Close file
     	fclose(pFile);
+}
+
+void qav::qvideo::save_jpeg_frame(const unsigned char *buf, const char* __fname) {
+	FILE 		*pFile;
+	std::string	s_fname;
+	char		num_buf[32];
+  struct jpeg_compress_struct cinfo;
+  struct jpeg_error_mgr jerr;
+	sprintf(num_buf, ".%08d.jpeg", frnum);
+	num_buf[31] = '\0';
+	std::ostringstream oss;
+	oss << ((__fname) ? __fname : fname.c_str()) << num_buf;
+	pFile=fopen(oss.str().c_str(), "wb");
+
+  if(!pFile)
+    return;
+
+  cinfo.err = jpeg_std_error(&jerr);
+  jpeg_create_compress(&cinfo);
+  jpeg_stdio_dest(&cinfo, pFile);
+  cinfo.image_width = out_width;
+  cinfo.image_height = out_height;
+  cinfo.input_components = 3;
+  cinfo.in_color_space = JCS_RGB;
+
+  jpeg_set_defaults(&cinfo);
+  jpeg_set_quality(&cinfo, 100, true);
+  jpeg_start_compress(&cinfo, true);
+
+  JSAMPROW row_pointer;
+
+  while(cinfo.next_scanline < cinfo.image_height) {
+    row_pointer = (JSAMPROW) &buf[cinfo.next_scanline*3*out_width];
+    jpeg_write_scanlines(&cinfo, &row_pointer, 1);
+  }
+  
+  jpeg_finish_compress(&cinfo);
+
+  fclose(pFile);
+}
+
+void qav::qvideo::save_frame(const unsigned char *buf, const char* __fname) {
+  if (settings::SAVE_JPG) save_jpeg_frame(buf, __fname);
+  if (settings::SAVE_PPM) save_ppm_frame(buf, __fname);
 }
 
 qav::qvideo::~qvideo() {

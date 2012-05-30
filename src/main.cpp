@@ -89,7 +89,8 @@ void print_help(void) {
 			"\n-v,--video-size:\n\tset analysis video size WIDTHxHEIGHT (ie. 1280x720), default is reference video size\n"
 			"\n-s,--skip-frames:\n\tskip n initial frames\n"
 			"\n-m,--max-frames:\n\tset max frames to process before quit\n"
-			"\n-I,--save-frames:\n\tsave frames (ppm format)\n"
+			"\n-I,--save-ppm:\n\tsave frames (ppm format)\n"
+			"\n-J,--save-jpeg:\n\tsave frames (jpeg format)\n"
 			"\n-G,--ignore-fps:\n\tanalyze videos even if the expected fps are different\n"
 			"\n-a,--analyzer:\n"
 			"\tpsnr : execute the psnr for each frame\n"
@@ -123,7 +124,8 @@ int parse_options(int argc, char *argv[], std::map<std::string, std::string>& ao
 		{"skip-frames", required_argument, 0, 's'},
 		{"reference", required_argument, 0, 'r'},
 		{"log-level", required_argument, 0, 'l'},
-		{"save-frames", no_argument, 0, 'I'},
+		{"save-ppm", no_argument, 0, 'I'},
+		{"save-jpeg", no_argument, 0, 'J'},
 		{"video-size", required_argument, 0, 'v'},
 		{"ignore-fps", no_argument, 0, 'G'},
 		{"help", no_argument, 0, 'h'},
@@ -131,7 +133,7 @@ int parse_options(int argc, char *argv[], std::map<std::string, std::string>& ao
 		{0, 0, 0, 0}
 	};
 
-	while ((c = getopt_long (argc, argv, "a:l:m:o:r:s:v:hIG", long_options, &option_index)) != -1) {
+	while ((c = getopt_long (argc, argv, "a:l:m:o:r:s:v:hIJG", long_options, &option_index)) != -1) {
 		switch (c) {
 			case 'a':
 				settings::ANALYZER = optarg;
@@ -200,7 +202,10 @@ int parse_options(int argc, char *argv[], std::map<std::string, std::string>& ao
 				exit(0);
 				break;
 			case 'I':
-				settings::SAVE_IMAGES = true;
+				settings::SAVE_PPM = true;
+				break;
+			case 'J':
+				settings::SAVE_JPG = true;
 				break;
 			case 'G':
 				settings::IGNORE_FPS = true;

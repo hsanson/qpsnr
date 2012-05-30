@@ -24,7 +24,8 @@ namespace settings {
 	std::string	REF_VIDEO = "";
 	int		MAX_FRAMES = -1;
 	int		SKIP_FRAMES = -1;
-	bool		SAVE_IMAGES = false;
+	bool		SAVE_PPM = false;
+	bool		SAVE_JPG = false;
 	std::string	ANALYZER = "psnr";
 	bool		IGNORE_FPS = false;
 	int		VIDEO_SIZE_W = -1;

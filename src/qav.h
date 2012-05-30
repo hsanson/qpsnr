@@ -67,6 +67,8 @@ namespace qav {
 		int get_fps_k(void) const;
 		bool get_frame(std::vector<unsigned char>& out, int *_frnum = 0);
 		void save_frame(const unsigned char *buf, const char* __fname = 0);
+		void save_jpeg_frame(const unsigned char *buf, const char* __fname = 0);
+		void save_ppm_frame(const unsigned char *buf, const char* __fname = 0);
 		~qvideo();
 	};
 }

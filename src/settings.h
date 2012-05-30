@@ -40,7 +40,8 @@ namespace settings {
 	extern std::string	REF_VIDEO;
 	extern int		MAX_FRAMES;
 	extern int		SKIP_FRAMES;
-	extern bool		SAVE_IMAGES;
+	extern bool		SAVE_PPM;
+	extern bool		SAVE_JPG;
 	extern std::string	ANALYZER;
 	extern bool		IGNORE_FPS;
 	extern int		VIDEO_SIZE_W;
