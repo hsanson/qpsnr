@@ -108,7 +108,7 @@ DATA=<<-END
             var s = data[series];
             for(j = 0; j < s.data.length; j++) {
               if(s.data[j][0] >= frame) {
-                return s.data[j][1].toFixed(4);
+                return s.data[j][1].toFixed(6);
               }
             }
           }
