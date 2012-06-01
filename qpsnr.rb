@@ -108,7 +108,7 @@ DATA=<<-END
             var s = data[series];
             for(j = 0; j < s.data.length; j++) {
               if(s.data[j][0] >= frame) {
-                return s.data[j][1].toFixed(2);
+                return s.data[j][1].toFixed(4);
               }
             }
           }
@@ -127,8 +127,9 @@ DATA=<<-END
           $("#placeholder").bind('plotclick', function(event, pos, item) {
             if(item) {
               current_frame = parseInt(item.datapoint[0].toFixed(0));
-              current_ssim = parseInt(item.datapoint[1].toFixed(2));
+              //current_ssim = parseInt(item.datapoint[1].toFixed(4));
               current_series = series.indexOf(item.series.label);
+              current_ssim = getSSIM(current_frame, current_series, data);
               page(current_frame, current_series, current_ssim);
             }
           });
