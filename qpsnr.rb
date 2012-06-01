@@ -58,45 +58,6 @@ DATA=<<-END
        margin-right: auto;
       }
 
-      .arrow-up {
-        	width: 0;
-        	height: 0;
-        	border-left: 5px solid transparent;
-        	border-right: 5px solid transparent;
-
-        	border-bottom: 5px solid black;
-      }
-
-      .arrow-down {
-        	width: 0;
-        	height: 0;
-        	border-left: 20px solid transparent;
-        	border-right: 20px solid transparent;
-
-        	border-top: 20px solid #f00;
-      }
-
-      .arrow-right {
-        	width: 0;
-        	height: 0;
-        	border-top: 60px solid transparent;
-        	border-bottom: 60px solid transparent;
-         
-        	border-left: 60px solid green;
-          float: right;
-          width: 60px;
-      }
-  
-      .arrow-left {
-        	width: 0;
-        	height: 0;
-        	border-top: 60px solid transparent;
-        	border-bottom: 60px solid transparent; 
-
-        	border-right:60px solid blue;
-          float: left;
-          width: 60px;
-      }
     </style>
   </head>
   <body>
