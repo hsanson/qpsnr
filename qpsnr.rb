@@ -77,11 +77,12 @@ DATA=<<-END
 
     <script type="text/javascript">
       $(function() {
-          var current_value = {VALUE};
-          var current_point = 1;
-          var current_item = 0;
-          var max_point = {MAX};
-          var items = [ {ITEMS} ];
+          var current_ssim = {VALUE};
+          var current_frame = {FRAME};
+          var current_series = 0;
+          var max_frame = {MAX};
+          var min_frame = {MIN};
+          var series = [ {ITEMS} ];
 
           function zeroFill(number, width) {
             width -= number.toString().length;
@@ -92,85 +93,73 @@ DATA=<<-END
           }
 
           var plot = $.plot($("#placeholder"), 
-                [ {DATA} ], {
-                series: {
-                  lines: { show: true, fill: false },
-                  points: { show: true, fill: false }
-                },
-                grid: { hoverable: true, clickable: true },
-                crosshair: { mode: "x" }
-            });
+              [ {DATA} ], {
+              series: {
+                lines: { show: true, fill: false },
+                points: { show: true, fill: false }
+              },
+              grid: { hoverable: true, clickable: true },
+              crosshair: { mode: "x" }
+          });
 
           var data = plot.getData();
-          console.log(data);
-          var previousPoint = null;
 
-          function page(number, item, current_value) {
-            $("#original_img").attr("src", '{BASENAME}/{SOURCE}' + '.' + zeroFill(number, 7) + '.jpeg');
-            $("#encoded_img").attr("src", '{BASENAME}/' + items[item] + '.' + zeroFill(number, 7) + '.jpeg');
-            ssim = data[current_item].data[current_point - 1][1];
-            $("#encoded_name").text(items[item] + ' FRAME: ' + current_point + ' SSIM: ' + ssim );
-            plot.unhighlight();
-            plot.highlight(current_item, current_point - 1);
-            plot.lockCrosshair({ x: data[current_item].data[current_point - 1][0], y: data[current_item].data[current_point - 1][1] });
-            console.log("Current : " + ' ' + items[item] + ' FRAME: ' + current_point.toString() + ' SSIM: ' + ssim );
+          function getSSIM(frame, series, data) {
+            var s = data[series];
+            for(j = 0; j < s.data.length; j++) {
+              if(s.data[j][0] >= frame) {
+                return s.data[j][1].toFixed(2);
+              }
+            }
           }
 
-          $("#placeholder").bind("plothover", function(event, pos, item) {
-            if(item) {
-            }
-          });
+          function page(frame, serie, ssim) {
+            $("#original_img").attr("src", '{BASENAME}/{SOURCE}' + '.' + zeroFill(frame, 7) + '.jpeg');
+            $("#encoded_img").attr("src", '{BASENAME}/' + series[serie] + '.' + zeroFill(frame, 7) + '.jpeg');
+            //ssim = data[current_item].data[current_frame - 1][1];
+            $("#encoded_name").text(series[serie] + ' FRAME: ' + frame.toString() + ' SSIM: ' + ssim.toString() );
+            plot.unhighlight();
+            plot.highlight(serie, [frame, ssim]);
+            plot.lockCrosshair({ x: frame, y: ssim });
+            console.log("Current : " + ' ' + series[serie] + ' FRAME: ' + frame.toString() + ' SSIM: ' + ssim );
+          }
 
           $("#placeholder").bind('plotclick', function(event, pos, item) {
             if(item) {
-              //alert("Click " + item.datapoint[0].toFixed(0).toString() + " " + item.datapoint[1].toFixed(2).toString());
-              current_point = parseInt(item.datapoint[0].toFixed(0));
-              current_item = items.indexOf(item.series.label);
-              page(current_point, current_item, current_value);
+              current_frame = parseInt(item.datapoint[0].toFixed(0));
+              current_ssim = parseInt(item.datapoint[1].toFixed(2));
+              current_series = series.indexOf(item.series.label);
+              page(current_frame, current_series, current_ssim);
             }
           });
 
-          page(1, 0);
-
-          $("#prev").bind("click", function() {
-            if( current > 0 ) {
-              current = current - 1;
-              page(current);
-            }
-          });
-
-          $("#next").bind("click", function() {
-            current = current + 1;
-            page(current);
-          });
+          page(current_frame, current_series, current_ssim);
 
           $("body").keydown(function(event) {
             if (event.which == 37) {
-              if(current_point > 1) {
-                current_point = current_point - 1;
+              if(current_frame > min_frame) {
+                current_frame = current_frame - 1;
               } else {
-                current_point = max_point;
+                current_frame = max_frame;
               }
-              page(current_point, current_item);
             } else if(event.which == 39) {
-              if((current_point + 1) <= max_point) {
-                current_point = current_point + 1;
+              if((current_frame + 1) <= max_frame) {
+                current_frame = current_frame + 1;
               } else {
-                current_point = 1;
+                current_frame = 1;
               }
-              page(current_point, current_item);
             } else if(event.which == 38) {
-              if(current_item <= 0) {
-                current_item = items.length - 1;
+              if(current_series <= 0) {
+                current_series = series.length - 1;
               } else {
-                current_item = current_item - 1;
+                current_series = current_series - 1;
               }
-              page(current_point, current_item);
             } else if(event.which == 40) {
-              current_item = (current_item + 1)%items.length;
-              page(current_point, current_item);
+              current_series = (current_series + 1)%series.length;
             }
-            console.log(event.which);
+            //current_ssim = data[current_series]
+            current_ssim = getSSIM(current_frame, current_series, data);
+            page(current_frame, current_series, current_ssim);
           });
       });
     </script>
@@ -274,8 +263,11 @@ end
 
 File.open("#{basename}.dat", "w") { |fp| fp << result }
 
-max = data[0].size
-val = data[0][0]
+min = (options.library[:skip] || 0).to_i + 1
+max = min + data[0].size - 1
+ssim = data[0][0][1]
+frame = data[0][0][0]
+
 # Convert data to a string for flot
 data = data.each_with_index.map do |x, i|
   "{ data: #{x.to_s}, label: '#{File.basename(ARGV[i])}' }"
@@ -290,7 +282,9 @@ File.open("#{basename}.html", "w") do |fp|
  fp << DATA.gsub("{SOURCE}", "#{basename}#{extname}")
          .gsub("{BASENAME}", basename)
          .gsub("{MAX}", max.to_s )
-         .gsub("{VALUE}", val.to_s )
+         .gsub("{MIN}", min.to_s )
+         .gsub("{VALUE}", ssim.to_s )
+         .gsub("{FRAME}", frame.to_s )
          .gsub("{ITEMS}", ARGV.map { |a| "'#{File.basename(a)}'" }.join(",").to_s)
          .gsub("{DATA}", data.to_s)
 end
