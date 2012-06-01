@@ -146,7 +146,7 @@ DATA=<<-END
               if((current_frame + 1) <= max_frame) {
                 current_frame = current_frame + 1;
               } else {
-                current_frame = 1;
+                current_frame = min_frame;
               }
             } else if(event.which == 38) {
               if(current_series <= 0) {
