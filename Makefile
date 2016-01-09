@@ -7,7 +7,7 @@ LINK=g++
 SRCDIR=src
 OBJDIR=obj
 FLAGS=-O2 -pthread
-LIBS=-lavcodec -lavformat -lswscale -ljpeg
+LIBS=-lavutil -lavcodec -lavformat -lswscale -ljpeg
 OBJS=$(OBJDIR)/qav.o $(OBJDIR)/stats.o $(OBJDIR)/main.o $(OBJDIR)/settings.o 
 EXEC=qpsnr
 
